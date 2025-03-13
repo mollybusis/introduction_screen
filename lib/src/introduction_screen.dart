@@ -491,12 +491,12 @@ class IntroductionScreenState extends State<IntroductionScreen> {
   }
 
   void next() {
-    animateScroll(getCurrentPage() + 1);
+    animateScroll(getCurrentPage() + 1, false);
     FocusScope.of(context).unfocus();
   }
 
   void previous() {
-    animateScroll(getCurrentPage() - 1);
+    animateScroll(getCurrentPage() - 1, true);
     FocusScope.of(context).unfocus();
   }
 
@@ -510,15 +510,18 @@ class IntroductionScreenState extends State<IntroductionScreen> {
 
   Future<void> skipToEnd() async {
     setState(() => _isSkipPressed = true);
-    await animateScroll(getPagesLength() - 1);
+    await animateScroll(getPagesLength() - 1, false);
     if (mounted) {
       setState(() => _isSkipPressed = false);
     }
   }
 
-  Future<void> animateScroll(int page) async {
+  Future<void> animateScroll(int page, bool isBack) async {
     bool isValidToProgress = widget.canProgress(getCurrentPage());
-    if (isValidToProgress) {
+    //And here, we need it to be valid to progress if we're going backwards. I NEED TO KNOW, eitherhere
+    //or in canProgress, whether we're going forwards or backwards. Because that MATTERS - they should always
+    //be able to go back.  But canProgress doesn't know that.
+    if (isValidToProgress || isBack) {
       _isScrolling = true;
       await _pageController.animateToPage(
         max(min(page, getPagesLength() - 1), 0),
@@ -567,9 +570,7 @@ class IntroductionScreenState extends State<IntroductionScreen> {
               onPressed: _onSkip,
             ),
       );
-    } else if (widget.showBackButton &&
-        getCurrentPage() > 0 &&
-        widget.canProgress(getCurrentPage())) {
+    } else if (getCurrentPage() > 0) {
       leftBtn = widget.overrideBack ??
           IntroButton(
             child: widget.back!,
@@ -691,7 +692,7 @@ class IntroductionScreenState extends State<IntroductionScreen> {
                                           onTap: widget.isProgressTap &&
                                                   !widget.freeze
                                               ? (pos) =>
-                                                  animateScroll(pos.toInt())
+                                                  animateScroll(pos.toInt(), false)
                                               : null,
                                         ),
                                       )
