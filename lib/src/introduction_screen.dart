@@ -571,7 +571,8 @@ class IntroductionScreenState extends State<IntroductionScreen> {
             ),
       );
     } else if (getCurrentPage() > 0) {
-      leftBtn = widget.overrideBack ??
+      if (widget.showBackButton) {
+        leftBtn = widget.overrideBack ??
           IntroButton(
             child: widget.back!,
             style: widget.baseBtnStyle?.merge(widget.backStyle) ??
@@ -579,6 +580,7 @@ class IntroductionScreenState extends State<IntroductionScreen> {
             semanticLabel: widget.backSemantic,
             onPressed: !_isScrolling ? previous : null,
           );
+      }
     }
 
     Widget? rightBtn;
